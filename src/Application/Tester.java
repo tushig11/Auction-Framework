@@ -10,6 +10,7 @@ import Visitor.*;
 public class Tester {
 
 	public static void main(String[] args) {
+		
 		//dumb data
 		List<AuctionItem> items = new ArrayList<>();
 		ItemFactory creator = ItemCreator.INSTANCE;
@@ -36,7 +37,7 @@ public class Tester {
 		
 		//timer test
 		BidTimer timer = new BidTimer(5);
+		timer.getTimer();
 		
 	}
-
 }
