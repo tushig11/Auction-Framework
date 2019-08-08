@@ -14,13 +14,7 @@ public class ItemPrice implements Visitor{
 	@Override
 	public void visit(Object ob) {
 		Item item = (Item) ob;
-		System.out.println(item.getName());
-		
-		
-		
-		
-		
-		
+		System.out.println(item.getItemName());
 	}
 
 }

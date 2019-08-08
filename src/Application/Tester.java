@@ -1,43 +1,57 @@
 package Application;
 
 import java.util.*;
-import Factory.*;
+
 import Iterator.*;
 import Model.*;
-import Timer.*;
-import Visitor.*;
+import Strategy.*;
 
 public class Tester {
 
 	public static void main(String[] args) {
-		
-		//dumb data
-		List<AuctionItem> items = new ArrayList<>();
-		ItemFactory creator = ItemCreator.INSTANCE;
-		AuctionItem item1 = creator.createItem("Car", 10000);
-		AuctionItem item2 = creator.createItem("House", 100000);
-		AuctionItem item3 = creator.createItem("Book", 5000);
-		items.add(item1);
-		items.add(item2);
-		items.add(item3);
-		
-		//iterator test
-		ACollection myCollection = new ItemCollection(items);
-		AIterator it = myCollection.getIterator();
-		
-		while(it.hasNext()) {
-			System.out.println(it.next());	
-		}
-		
-		//visitor test
-		Visitor visitor = new ItemPrice();
-		for(AuctionItem i: items) {
-			i.accept(visitor);
-		}
-		
-		//timer test
-		BidTimer timer = new BidTimer(5);
-		timer.getTimer();
-		
+
+        User henok = new User("1","Henok");
+        User bob = new User("2","Bob");
+        
+        List<Item> itemList = new ArrayList<>();
+        
+        AuctionStrategy auctionStrategy = new Absolute();
+        
+        auctionStrategy.placeItemForBid(henok, "K11", "Car","\"year 2019, New car \"", 20, 10, 1000);
+        auctionStrategy.placeItemForBid(bob, "K12", "Car","\"year 2019, New car \"", 40, 10, 1000);
+
+        // iAuctionServer.placeItemForBid("Abera", "K12", "Car", "\"year 2019, New car \"", 21, 10);
+//
+//
+        auctionStrategy.bidOnItem(henok, "K11", 999,0 );
+//        auctionStrategy.bidOnItem(bob, "K11", 22, 999);
+        auctionStrategy.bidOnItem(henok, "K11", 1001,0 );
+//        auctionStrategy.bidOnItem(bob, "K11", 22, 2000.0);
+        auctionStrategy.bidOnItem(bob, "K12", 22, 1000.0);
+
+        List<Bid> bidList =  ((Absolute) auctionStrategy).getPlacedBids();;
+
+        double highBid =  ((Absolute) auctionStrategy).getCurrentWinningBid("K11");
+        double highBid2 =  ((Absolute) auctionStrategy).getCurrentWinningBid("K12");
+
+//        itemList = auctionStrategy.getItemList();
+//
+//        AIterator il = new ItemCollection(itemList).getIterator();
+//        
+//        while(il.hasNext()) {
+//        	Item b = (Item) il.next();
+//        	System.out.println("Starting price: " +b.getItemPrice() +  "  " + "Item Id  :" + b.getItemId() );
+//        }
+//
+//        //System.out.println(highBid);
+//        System.out.println("The high bid is :" + highBid);
+//        System.out.println("The high bid is :" + highBid2);
+
+        
+//        ACollection collection = new ItemCollection(bidList);
+//        AIterator itt = collection.getIterator();
+        
+        System.out.println(auctionStrategy.getObservers());
+	
 	}
 }

@@ -37,4 +37,8 @@ public class BidTimer {
 	public int remainingTime() {
 		return i;
 	}
+	
+	public int getSeconds() {
+		return seconds;
+	}
 }
