@@ -12,6 +12,7 @@ public class Tester {
 
         User henok = new User("1","Henok");
         User bob = new User("2","Bob");
+        User naya = new User("3", "Naya");
         
         List<Item> itemList = new ArrayList<>();
         
