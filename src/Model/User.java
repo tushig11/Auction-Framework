@@ -63,4 +63,5 @@ public class User implements AuctionUser{
 
         // System.out.println("Current bid Status  :  "+  "Item Id-Number "+ bid.getItemId() +" Item type  : " + bid.getItemType()+ " Current highest Price  : " + bid.getPrice() + " Final price  : " + bid.getFinalPrice());
     }
+
 }

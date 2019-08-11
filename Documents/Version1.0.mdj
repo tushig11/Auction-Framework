@@ -7131,6 +7131,19 @@
 							"text": "addAble"
 						},
 						{
+							"_type": "UMLTextView",
+							"_id": "AAAAAAFsZNRVgCofjT4=",
+							"_parent": {
+								"$ref": "AAAAAAFF+qBtyKM79qY="
+							},
+							"font": "Arial;13;0",
+							"left": 664,
+							"top": 160,
+							"width": 169,
+							"height": 25,
+							"text": "Auction Framework sketch"
+						},
+						{
 							"_type": "UMLClassView",
 							"_id": "AAAAAAFsgBBjlZcyYlU=",
 							"_parent": {
