@@ -5,7 +5,7 @@ public interface AuctionItem {
 	public void accept(Visitor visitor);
 	
     public String getItemName();
-    public void setItemNAme(String itemNAme);
+    public void setItemName(String itemName);
     public String getItemId();
     public void setItemId(String itemId) ;
     public String getItemType();

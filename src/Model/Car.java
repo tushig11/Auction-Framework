@@ -1,7 +1,7 @@
 package Model;
 import Visitor.Visitor;
 
-public class Item implements AuctionItem {
+public class Car implements AuctionItem {
 
     String ItemName;
     String ItemId;
@@ -13,7 +13,7 @@ public class Item implements AuctionItem {
 
     double finalPrice;
 
-    public Item(){
+    public Car(){
     }
 
     public String getItemName() {

@@ -1,17 +1,43 @@
 package State;
 
-public class Paid implements AccountType{
+import java.time.LocalDate;
+import java.util.List;
 
-	@Override
-	public void bidOn() {
-		// TODO Auto-generated method stub
-		
+import Factory.ItemCreator;
+import Model.*;
+
+public class Paid implements AccountType{
+	
+	private String name = "Paid";
+	private LocalDate duration;
+	private User user;
+	private List<AuctionItem> items;
+	
+	Paid(User user, LocalDate duration){
+		this.user = user;
+		this.duration = duration;
 	}
 
 	@Override
 	public String getState() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.name;
 	}
 
+	@Override
+	public List<AuctionItem> getItems() {
+		return items;
+	}
+	
+	@Override
+	public void createItem() {
+			checkDuration();
+			AuctionItem item = ItemCreator.INSTANCE.createItem();
+			items.add(item);
+	}
+	
+	public void checkDuration() {
+		if(this.duration.compareTo(LocalDate.now()) < 0) {
+			user.setState(new Free(user));
+		}
+	}
 }

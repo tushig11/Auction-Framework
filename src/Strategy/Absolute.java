@@ -1,112 +1,120 @@
 package Strategy;
 
-import Model.*;
-import Observer.*;
 import Observer.Observer;
-import Timer.*;
+
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import Model.*;
 
-public class Absolute implements AuctionStrategy{
+public class Absolute implements AuctionStrategy {
 
-    List<Item> itemList;
+    List<AuctionItem> itemList;
     List<User> userList;
-    public List<Bid> placedBids;
-    private List<Observer> observers = new ArrayList<>();
+    private ArrayList<Observer> observers;
     private final Object MUTEX = new Object();
+
+    List<Bid>  storeBidList;
+    public List<Bid> placedBids;
+
 
     public Absolute(){
         itemList = new ArrayList<>();
         userList = new ArrayList<>();
         placedBids = new ArrayList<>();
+        storeBidList = new ArrayList<>();
+        observers = new ArrayList<>();
     }
 
     @Override
-    public void placeItemForBid(User owner, String itemId, String itemType, String itemDesc, double startBid, int auctionTime, double finalPrice) {
+    public void placeItemForBid(User user, AuctionItem item, double startBid, LocalDate auctionTime, double finalPrice) {
 
-    	attach(owner);
-        Item item = getItem(itemId);
-        Bid bid = getBid(itemId);
+    	item.setFinalPrice(finalPrice);
+    	
+        register(user);
+        Bid bid = getBid(item.getItemId());
 
         if (!this.getItemList().contains(item)){
-            Item newItem = new Item();
-            newItem.setItemDiscription(itemDesc);
-            newItem.setItemId(itemId);
-            newItem.setItemOwner(owner.getName());
-            newItem.setItemPrice(startBid);
-            newItem.setItemType(itemType);
-            newItem.setFinalPrice(finalPrice);
-            addItem(newItem);
-            System.out.println("The Item is add to the list");
-
-        } else{
-            System.out.println("The Item is already on the list ");
+            addItem(item);
+            System.out.println("The item is add to the list  : " + item.getItemType());
+        }else{
+            System.out.println("The item is already on the list ");
         }
 
-        if(!this.getItemList().contains(item)){
+        if(this.getItemList().contains(item)){
             if(!this.getPlacedBids().contains(bid)){
-                Bid newBid = new Bid(owner.getName(), itemId, startBid, auctionTime, itemType, finalPrice );
+                Bid newBid = new Bid(user, item, startBid, auctionTime, item.getFinalPrice());
                 addBids(newBid);
-                System.out.println("The Item is add to the Bid List ");
+                System.out.println("The item is add to the bid List ");
                 System.out.println("Beginning price of the auction : " + startBid );
-                System.out.println("Pay Now  : " + finalPrice );
-                BidTimer bidTimer = new BidTimer(auctionTime);
-                bidTimer.isActive();
-                notifyObservers("New Item placed on Auction");
+                System.out.println("Pay now  : " + finalPrice );
+                System.out.println("*************************************************************");
+                notifyObservers("Notify new item add to the auction for bidding ");
+                System.out.println("Number of bidder : "+ placedBids.size());
             }
-
         }else {System.out.println("The Item is not add to the bid List");}
+
     }
-
+    
     @Override
-    public void bidOnItem(User bidder, String itemId, double bidPrice, double finalPrice) {
-
-    	attach(bidder);
+    public void bidOnItem(User user, AuctionItem item, double bidPrice, double finalPrice) {
         // fine the bid item and the item id is the same ! so find the item and update the price and
         // then notify to the whole memebres
         List<Bid> bidList = this.placedBids;
-        List<Item> itemList = this.itemList;
+        List<AuctionItem> itemList = this.itemList;
+        register(user);
+        Bid i = getBid(item.getItemId());
+        AuctionItem ii = getItem(item);
+        
+        if(bidList.contains(i) && itemList.contains(ii) ){
 
-        Bid i = getBid(itemId);
-        Item ii = getItem(itemId);
-        if(bidList.contains(i) && itemList.contains(ii)){
+            if(ii.getFinalPrice() == finalPrice || bidPrice > ii.getFinalPrice() && i.getTime().compareTo(LocalDate.now()) >= 0){
+                updateBid(user, item.getItemId(), bidPrice, finalPrice);
+                double highBid =  getCurrentWinningBid(i.getItem().getItemId());
+                double PayNowfinalPrice  = i.getFinalPrice();
+                System.out.println("==================================Auction Over  :" + i.getItem().getItemId() +"===================================================");
+                System.out.println("The Auction is Over  : " +i.getItem().getItemId() + ": " + i.getPrice()  +" : "+"Item is type  : "+ i.getItem().getItemType() +"The new Price is : " + i.getPrice()+ "Final Price is :" +i.getFinalPrice());
+                System.out.println("The highest Bid offer is : " +  highBid + ": "  +" : "+"Pay Now : "+ PayNowfinalPrice );
 
-            if(ii.getFinalPrice() == finalPrice || bidPrice > ii.getFinalPrice()){
-            	
-                updateBid(bidder.getName(),itemId, bidPrice, finalPrice);
-                System.out.println("The Auction is Over  : " +i.getItemId() + ": " + i.getPrice()  +" : "+"Item is type  : "+ i.getItemType() +"The new Price is : " + i.getPrice()+ "Final Price is :" +i.getFinalPrice());
-                notifyObservers("Item sold out");
-                removeBid(itemId);
-                System.out.println("---------------Winner is: " + i.getBidder() + " Sold price: " + i.getPrice());
+                System.out.println("==================================  ********** ===================================================");
+                notifyObservers("Notify item Sold out");
+                removeBid(item.getItemId());
+                storeBidList.add(i);
+                System.out.println(storeBidList.size());
             }
 
             else if(i.getPrice() < bidPrice){
-                updateBid(bidder.getName(),itemId, bidPrice, finalPrice);
-                System.out.println("The Item is updated, Item Id is : " +i.getItemId() + ": " + i.getPrice()  +"Item is type  : "+ i.getItemType() +"The new Price is : " + i.getPrice());
-                notifyObservers("Highest bid changed");
-            }else {
-                System.out.println("Your price is lower put your higher price");
+                updateBid(user, item.getItemId(), bidPrice, finalPrice);
+                storeBidList.add(i);
+                System.out.println("==================================Auction Update===================================================");
 
+                System.out.println("The item is updated, Item id is : " +i.getItem().getItemId() + " : " + " Bidder Name : " + i.getBidder().getUserName() +"Item type :"+ i.getItem().getItemType() +"The new price is :" + i.getPrice());
+                notifyObservers("Notify item Update");
+
+            }else {
+                System.out.println("==================================Auction Denied ===================================================");
+                System.out.println("Your price is lower put your higher price");
+                System.out.println("================================== -----  ===================================================");
             }
+            //call registerListener
 
         }
         else {
-            System.out.println("There is no Item with the Id in the BidList: " + itemId + "Check it again");
+            System.out.println("There is no Item with the Id in the BidList: " + item.getItemId() + "   : Check it again");
         }
 
     }
-
     @Override
-    public List<Item> getItemList() {
+    public List<AuctionItem> getItemList() {
         return this.itemList;
     }
 
     @Override
-    public Item getItem(String itemId) {
-        return this.getItemList().stream().filter(x-> x.getItemId().equals(itemId)).findFirst().orElse(null);
+    public AuctionItem getItem(AuctionItem item) {
+        return this.getItemList().stream().filter(x-> x.equals(item)).findFirst().orElse(null);
     }
 
-    public void setItemList(List<Item> itemList) {
+    public void setItemList(List<AuctionItem> itemList) {
         this.itemList = itemList;
     }
 
@@ -128,82 +136,99 @@ public class Absolute implements AuctionStrategy{
 
     public double getCurrentWinningBid(String ItemId){
 
-        return this.getPlacedBids().stream()
-                .filter(bid->ItemId.equals(bid.getItemId()))
+        return this.getStoreBidList().stream()
+                .filter(bid->ItemId.equals(bid.getItem().getItemId()))
                 .map(bid -> bid.getPrice())
                 .max(Double::compare)
                 .orElse(0.0);
+
     }
 
-    private Bid getBid(String ItemId){
-
+    private Bid getBid(String id){
         if(this.getPlacedBids() != null){
             for(Bid i : this.getPlacedBids()){
-                if(ItemId == i.getItemId()){
+                if(id == i.getItem().getItemId()){
                     return i;
                 }
-            }
 
+            }
         }
         return null;
 
     }
-
     private void addBids(Bid bids) {
         this.placedBids.add(bids);
     }
 
-    private void addItem(Item item){
-        this.itemList.add(item);
+    private void addItem(AuctionItem newItem){
+        this.itemList.add(newItem);
     }
 
-    private void updateBid(String bidderName, String id, double price, double finalPrice){
+    private void updateBid(User bidder, String id, double price, double finalPrice){
+
         Bid b = this.getBid(id);
         b.setPrice(price);
-        b.setBidder(bidderName);
+        b.setBidder(bidder);
         b.setFinalPrice(finalPrice);
         this.addBids(b);
 
     }
 
     public void removeBid(String ItemId){
-      this.placedBids = this.placedBids.stream().filter(x->!x.getItemId().equals(ItemId)).collect(Collectors.toList());
+      this.placedBids = this.placedBids.stream().filter(x->!x.getItem().getItemId().equals(ItemId)).collect(Collectors.toList());
     }
 
-	@Override
-	public void registerListener(IAuctionListener al, String itemName) {
-		// TODO Auto-generated method stub
-		
-	}
+    public List<Bid> getStoreBidList() {
+        return storeBidList;
+    }
 
+    public void setStoreBidList(List<Bid> storeBidList) {
+        this.storeBidList = storeBidList;
+    }
+
+    public User getuser(String UserName, String userId){
+
+        User user = new User(UserName, userId);
+        user.setUserName(UserName);
+        user.setUserId(userId);
+
+        return user;
+    }
+
+
+    @Override
+    public void register(Observer o) {
+        synchronized (MUTEX) {
+            if (!observers.contains(o))
+                observers.add(o);
+        }
+
+    }
+
+    @Override
+    public void unregister(Observer o) {
+        synchronized (MUTEX) {
+            int i = observers.indexOf(o);
+            if (i >= 0)
+                observers.remove(i);
+        }
+    }
+
+    @Override
+    public void notifyObservers(String message) {
+        synchronized (MUTEX){
+            int n = observers.size();
+            for (int i = 0; i < n; ++i) {
+                Observer observer = (Observer)
+                        observers.get(i);
+                observer.update(message, this.placedBids);
+            }
+        }
+
+    }
+    
 	@Override
-	public void attach(Observer observer) {
-		synchronized (MUTEX) {
-			if (!observers.contains(observer))
-				observers.add(observer);
-		}
-	}
-	@Override
-	public void detach(Observer observer) {
-		synchronized (MUTEX) {
-			int i = observers.indexOf(observer);
-			if (i >= 0)
-				observers.remove(i);
-		}
-	}
-	@Override
-	public void notifyObservers(String message) {
-		synchronized (MUTEX){
-			int n = observers.size();
-			for (int i = 0; i < n; ++i) {
-				Observer observer = (Observer)
-				observers.get(i);
-				observer.update(message, this.placedBids);
-			}
-		}
-	}
-	
 	public List<Observer> getObservers() {
-		return observers;
+		return this.observers;
 	}
 }
