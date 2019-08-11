@@ -1,17 +1,18 @@
 package Strategy;
 
-import Observer.Observer;
-
+import Observer.AuctionUser;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import Iterator.*;
 import Model.*;
 
 public class Absolute implements AuctionStrategy {
 
     List<AuctionItem> itemList;
-    List<User> userList;
-    private ArrayList<Observer> observers;
+    List<AuctionUser> userList;
+    private ArrayList<AuctionUser> observers;
     private final Object MUTEX = new Object();
 
     List<Bid>  storeBidList;
@@ -27,7 +28,7 @@ public class Absolute implements AuctionStrategy {
     }
 
     @Override
-    public void placeItemForBid(User user, AuctionItem item, double startBid, LocalDate auctionTime, double finalPrice) {
+    public void placeItemForBid(AuctionUser user, AuctionItem item, double startBid, LocalDate auctionTime, double finalPrice) {
 
     	item.setFinalPrice(finalPrice);
     	
@@ -57,7 +58,7 @@ public class Absolute implements AuctionStrategy {
     }
     
     @Override
-    public void bidOnItem(User user, AuctionItem item, double bidPrice, double finalPrice) {
+    public void bidOnItem(AuctionUser user, AuctionItem item, double bidPrice, double finalPrice) {
         // fine the bid item and the item id is the same ! so find the item and update the price and
         // then notify to the whole memebres
         List<Bid> bidList = this.placedBids;
@@ -118,11 +119,11 @@ public class Absolute implements AuctionStrategy {
         this.itemList = itemList;
     }
 
-    public List<User> getUserList() {
+    public List<AuctionUser> getUserList() {
         return userList;
     }
 
-    public void setUserList(List<User> userList) {
+    public void setUserList(List<AuctionUser> userList) {
         this.userList = userList;
     }
 
@@ -145,13 +146,14 @@ public class Absolute implements AuctionStrategy {
     }
 
     private Bid getBid(String id){
+    	AIterator it = new ItemCollection(this.getPlacedBids()).getIterator();
         if(this.getPlacedBids() != null){
-            for(Bid i : this.getPlacedBids()){
+        	while(it.hasNext()) {
+        		Bid i = (Bid) it.next();
                 if(id == i.getItem().getItemId()){
                     return i;
                 }
-
-            }
+        	}
         }
         return null;
 
@@ -164,7 +166,7 @@ public class Absolute implements AuctionStrategy {
         this.itemList.add(newItem);
     }
 
-    private void updateBid(User bidder, String id, double price, double finalPrice){
+    private void updateBid(AuctionUser bidder, String id, double price, double finalPrice){
 
         Bid b = this.getBid(id);
         b.setPrice(price);
@@ -197,7 +199,7 @@ public class Absolute implements AuctionStrategy {
 
 
     @Override
-    public void register(Observer o) {
+    public void register(AuctionUser o) {
         synchronized (MUTEX) {
             if (!observers.contains(o))
                 observers.add(o);
@@ -206,7 +208,7 @@ public class Absolute implements AuctionStrategy {
     }
 
     @Override
-    public void unregister(Observer o) {
+    public void unregister(AuctionUser o) {
         synchronized (MUTEX) {
             int i = observers.indexOf(o);
             if (i >= 0)
@@ -217,18 +219,16 @@ public class Absolute implements AuctionStrategy {
     @Override
     public void notifyObservers(String message) {
         synchronized (MUTEX){
-            int n = observers.size();
-            for (int i = 0; i < n; ++i) {
-                Observer observer = (Observer)
-                        observers.get(i);
-                observer.update(message, this.placedBids);
-            }
+        	AIterator it = new ItemCollection(observers).getIterator();
+        	while(it.hasNext()) {
+        		AuctionUser observer = (AuctionUser) it.next();
+        		observer.update(message, this.placedBids);
+        	}
         }
 
-    }
-    
+    } 
 	@Override
-	public List<Observer> getObservers() {
+	public List<AuctionUser> getObservers() {
 		return this.observers;
 	}
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import Strategy.*;
 import State.*;
 
-public class User implements Observer {
+public class User implements AuctionUser{
 
     String UserName;
     String userId;

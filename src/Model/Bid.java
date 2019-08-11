@@ -3,29 +3,31 @@ package Model;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import Observer.AuctionUser;
+
 public class Bid {
 
-    private User bidder;
+    private AuctionUser bidder;
     private AuctionItem item;
     private double price;
     private LocalDate time;
     private double finalPrice;
 
 
-    public Bid(User bidder, AuctionItem item, double price, LocalDate time, double finalPrice) {
+    public Bid(AuctionUser bidder, AuctionItem item, double price, LocalDate time, double finalPrice) {
         this.item = item;
         this.time = time;
         this.bidder = bidder;
         this.price = price;
         this.finalPrice= finalPrice;
     }
-    public Bid(User bidder, AuctionItem item, double price, LocalDate time) {
+    public Bid(AuctionUser bidder, AuctionItem item, double price, LocalDate time) {
         this.item = item;
         this.time = time;
         this.bidder = bidder;
         this.price = price;
     }
-    public User getBidder() {
+    public AuctionUser getBidder() {
         return bidder;
     }
     
@@ -52,7 +54,7 @@ public class Bid {
     public AuctionItem getItem() {
     	return this.item;
 	}
-    public void setBidder(User bidder) {
+    public void setBidder(AuctionUser bidder) {
         this.bidder = bidder;
     }
 
