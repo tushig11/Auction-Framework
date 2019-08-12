@@ -37,7 +37,5 @@ public class Tester {
         auction.bidOnItem(henok, henokItem, 300, 0);
         auction.bidOnItem(bob, henokItem, 101, 0);
         auction.bidOnItem(henok, henokItem, 1001, 0);
-
-	
 	}
 }
