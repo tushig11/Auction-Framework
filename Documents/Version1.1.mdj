@@ -6620,8 +6620,8 @@
 								"$ref": "AAAAAAFF+qBtyKM79qY="
 							},
 							"font": "Arial;13;0",
-							"left": 224,
-							"top": 616,
+							"left": 272,
+							"top": 600,
 							"width": 78.6689453125,
 							"height": 25,
 							"text": "changeAble"
